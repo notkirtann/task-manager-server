@@ -34,10 +34,48 @@ const userSchema = new mongoose.Schema({
             }
         }
     },
+    address :[{
+        city : {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        state : {
+            type: String,
+            required: true,
+            trim: true,
+        },
+        pincode : {
+            type: Number,
+            required: true,
+        }
+    }],
+    phoneNumber : [{
+        mainNum : {
+            type: String,
+            required : true,
+            trim: true,
+            validate(value) {
+            if (!validator.isMobilePhone(value)) {
+                throw new Error('Write valid number')
+                }
+            }
+        },
+        altNum : {
+            type: String,
+            default : '',
+            trim : true,
+            validate(value) {
+            if (!validator.isMobilePhone(value)) {
+                throw new Error('Write valid number')
+                }
+            }
+        } 
+    }],
     tokens: [{
         token: {
             type: String,
-            require: true
+            required: true
         }
     }]
 })
@@ -77,6 +115,6 @@ userSchema.pre('save', async function(next) {
     next()
 })
 
-const User = mongoose.model('Users', userSchema)
+const User = mongoose.model('User', userSchema)
 
 export default User;

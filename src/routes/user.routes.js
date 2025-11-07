@@ -18,6 +18,10 @@ router.get("/:id", auth, controllers.getUserById);
 
 router.patch("/:id", auth, controllers.updateUserById);
 
+router.patch("/:id/address/:addressId", auth, controllers.updateAddressField);
+
+router.patch("/:id/phone/:phoneId", auth, controllers.updatePhoneNumberField);
+
 router.delete("/:id", auth, controllers.deleteUser);
 
 export default router;

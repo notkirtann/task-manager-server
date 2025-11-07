@@ -1,4 +1,4 @@
-import User from "../models/users.js";
+import User from "../models/user.js";
 
 const createUser = async (req, res) => {
   try {
@@ -90,7 +90,7 @@ const logoutUser = async (req,res) => {
   } 
 }
 
-const logoutAll = async (req,params) => {
+const logoutAll = async (req,res) => {
   try {
     req.user.tokens = []
     await req.user.save()
@@ -100,4 +100,62 @@ const logoutAll = async (req,params) => {
   }
 }
 
-export { createUser, getMyUsers, getUserById, updateUserById, deleteUser, loginUser, logoutUser, logoutAll };
+const updateAddressField = async (req, res) => {
+  try {
+    const { id, addressId } = req.params;
+    const updates = req.body; 
+
+    const updateQuery = {};
+    for (let key in updates) {
+      updateQuery[`address.$.${key}`] = updates[key];
+    }
+
+    const user = await User.findOneAndUpdate(
+      { _id: id, "address._id": addressId },
+      { $set: updateQuery },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).send({ error: "User or address not found" });
+    }
+
+    res.send({
+      message: "Address updated successfully",
+      updatedUser: user
+    });
+  } catch (error) {
+    res.status(400).send({ error: error.message });
+  }
+};
+
+const updatePhoneNumberField = async (req, res) => {
+  try {
+    const { id, phoneId } = req.params;
+    const updates = req.body; 
+
+    const updateQuery = {};
+    for (let key in updates) {
+      updateQuery[`phoneNumber.$.${key}`] = updates[key];
+    }
+    
+    const user = await User.findOneAndUpdate(
+      { _id: id, "phoneNumber._id": phoneId },
+      { $set: updateQuery },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).send({ error: "User or phone number not found" });
+    }
+
+    res.send({
+      message: "Phone number updated successfully",
+      updatedUser: user
+    });
+  } catch (error) {
+    res.status(400).send({ error: error.message });
+  }
+};
+
+export { createUser, getMyUsers, getUserById, updateUserById, deleteUser, loginUser, logoutUser, logoutAll, updateAddressField, updatePhoneNumberField};

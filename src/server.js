@@ -10,7 +10,7 @@ dotenv.config({
   processEnv: process.env,
 });
 
-console.log("Loaded MONGODB_URL:", process.env.MONGODB_URL);
+console.log("------------->Loaded MONGODB_URL:", process.env.MONGODB_URL,"<----------------");
 
 import express from "express";
 import "./db/mongoose.js";
@@ -25,5 +25,5 @@ app.use('/users', userRoutes);
 app.use('/tasks', taskRoutes);
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`---------------Server running on port ${PORT}----------------------`);
 });

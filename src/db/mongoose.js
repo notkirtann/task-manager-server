@@ -16,8 +16,8 @@ const url = process.env.MONGODB_URL || 'mongodb://localhost:27017/task-manager-a
 console.log("🔌 Connecting to MongoDB:", url);
 
 mongoose.connect(url)
-  .then(() => console.log("MongoDB connected successfully"))
+  .then(() => console.log("--------------MongoDB connected successfully---------------"))
   .catch((e) => {
-    console.error("MongoDB connection failed:", e);
+    console.error("MongoDB connection failed:----------------->X X X X X X", e);
     process.exit(1);
   });
