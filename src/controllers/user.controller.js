@@ -11,63 +11,6 @@ const createUser = async (req, res) => {
   }
 };
 
-const getMyUsers = async (req, res) => {
-  res.send(req.user)
-}
-
-const getUserById = async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-
-    if (!user) {
-      return res.status(404).send({ error: "User not found" });
-    }
-
-    res.send(user);
-  } catch (error) {
-    res.status(500).send({ error: "Internal server error" });
-  }
-};
-
-const updateUserById = async (req, res) => {
-  const updates = Object.keys(req.body);
-  const allowedUpdates = ['name', 'email', 'password', 'age'];
-  const isValidOperation = updates.every(update => allowedUpdates.includes(update));
-
-  if (!isValidOperation) {
-    return res.status(400).send({ error: 'Invalid updates!' });
-  }
-
-  try {
-    const user = await User.findById(req.params.id);
-    
-    if (!user) {
-      return res.status(404).send({ error: "User not found" });
-    }
-
-    updates.forEach(update => user[update] = req.body[update]);
-    await user.save();
-    
-    res.send(user);
-  } catch (error) {
-    res.status(400).send({ error: error.message });
-  }
-};
-
-const deleteUser = async (req, res) => {
-  try {
-    const user = await User.findByIdAndDelete(req.params.id);
-
-    if (!user) {
-      return res.status(404).send({ error: "User not found" });
-    }
-
-    res.send(user);
-  } catch (error) {
-    res.status(500).send({ error: "Internal server error" });
-  }
-};
-
 const loginUser = async (req, res) => {
   try {
     const user = await User.findByCredentials(req.body.email, req.body.password)
@@ -100,9 +43,34 @@ const logoutAll = async (req,res) => {
   }
 }
 
+const getMyProfile = async (req, res) => {
+  res.send(req.user)
+}
+
+const updateUser = async (req, res) => {
+  const updates = Object.keys(req.body);
+  const allowedUpdates = ['name', 'email', 'password', 'age'];
+  const isValidOperation = updates.every(update => allowedUpdates.includes(update));
+
+  if (!isValidOperation) {
+    return res.status(400).send({ error: 'Invalid updates!' });
+  }
+
+  try {
+    const user = await User.findById(req.user._id);
+
+    updates.forEach(update => user[update] = req.body[update]);
+    await user.save();
+    
+    res.send(user);
+  } catch (error) {
+    res.status(400).send({ error: error.message });
+  }
+};
+
 const updateAddressField = async (req, res) => {
   try {
-    const { id, addressId } = req.params;
+    const { userId, addressId } = req.params;
     const updates = req.body; 
 
     const updateQuery = {};
@@ -111,7 +79,7 @@ const updateAddressField = async (req, res) => {
     }
 
     const user = await User.findOneAndUpdate(
-      { _id: id, "address._id": addressId },
+      { _id: userId, "address._id": addressId },
       { $set: updateQuery },
       { new: true }
     );
@@ -131,7 +99,7 @@ const updateAddressField = async (req, res) => {
 
 const updatePhoneNumberField = async (req, res) => {
   try {
-    const { id, phoneId } = req.params;
+    const { userId, phoneId } = req.params;
     const updates = req.body; 
 
     const updateQuery = {};
@@ -140,7 +108,7 @@ const updatePhoneNumberField = async (req, res) => {
     }
     
     const user = await User.findOneAndUpdate(
-      { _id: id, "phoneNumber._id": phoneId },
+      { _id: userId, "phoneNumber._id": phoneId },
       { $set: updateQuery },
       { new: true }
     );
@@ -158,4 +126,36 @@ const updatePhoneNumberField = async (req, res) => {
   }
 };
 
-export { createUser, getMyUsers, getUserById, updateUserById, deleteUser, loginUser, logoutUser, logoutAll, updateAddressField, updatePhoneNumberField};
+const removeAddressField = async (req, res) => {
+  try {
+    const { userId, addressId } = req.params;
+
+    const user = await User.findByIdAndUpdate(
+      userId,
+      { $pull: { address: { _id: addressId } } }, // remove that address object
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(404).send({ error: "User or address not found" });
+    }
+
+    res.send({
+      message: "Address removed successfully",
+      updatedUser: user
+    });
+  } catch (error) {
+    res.status(400).send({ error: error.message });
+  }
+};
+
+const deleteUser = async (req, res) => {
+  try {
+    await req.users.remove()
+    res.send(req.user);
+  } catch (error) {
+    res.status(500).send({ error: "Internal server error" });
+  }
+};
+
+export { createUser, getMyProfile, updateUser, deleteUser, loginUser, logoutUser, logoutAll, updateAddressField, updatePhoneNumberField, removeAddressField,};
