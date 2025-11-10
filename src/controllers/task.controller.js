@@ -2,7 +2,12 @@ import Task from "../models/task.js";
 
 const createTask = async (req, res) => {
   try {
-    const task = new Task(req.body);
+    // const task = new Task(req.body);
+    const task = new Task({
+      ...req.body,
+      ownerId : req.user._id
+    })
+
     await task.save();
     res.status(201).send(task);
   } catch (error) {
@@ -18,6 +23,20 @@ const getAllTasks = async (req, res) => {
     res.status(500).send({ error: "Error fetching tasks" });
   }
 };
+
+const getTaskById = async (req,res) => {
+  const _id = req.params._id
+  try {
+    const task = await Task.findOne({_id, ownerId : req.params._id})
+
+    if(!task){
+      return res.status(404).send()
+    }
+    res.send(task)
+  } catch (e) {
+    res.status(500).send('Unable to fetch dure sever error')
+  }
+}
 
 const updateTaskById = async (req, res) => {
   const updates = Object.keys(req.body);
@@ -58,4 +77,4 @@ const deleteTask = async (req, res) => {
   }
 }
 
-export { createTask, getAllTasks, updateTaskById, deleteTask };
+export { createTask, getAllTasks, updateTaskById, deleteTask,getTaskById };
