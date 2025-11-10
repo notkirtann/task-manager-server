@@ -19,18 +19,6 @@ const getAllTasks = async (req, res) => {
   }
 };
 
-// const getTaskById = async (req, res) => {
-//   try {
-//     const task = await Task.findById(req.params.id).populate('userId', 'name email');
-//     if (!task) {
-//       return res.status(404).send({ error: "Task not found" });
-//     }
-//     res.send(task);
-//   } catch (error) {
-//     res.status(500).send({ error: "Internal server error" });
-//   }
-// };
-
 const updateTaskById = async (req, res) => {
   const updates = Object.keys(req.body);
   const allowedUpdates = ['description', 'completed'];

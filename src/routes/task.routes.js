@@ -7,8 +7,6 @@ router.post("/", createTask);
 
 router.get("/", getAllTasks);
 
-// router.get("/:id", getTaskById);
-
 router.patch("/:id", updateTaskById);
 
 router.delete("/:id", deleteTask);
