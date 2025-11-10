@@ -2,7 +2,7 @@ import mongoose from "mongoose"
 import validator from 'validator'
 import bcrypt from 'bcrypt'
 import jwt from 'jsonwebtoken'
-import Task from "./task.js"
+// import Task from "./task.js"
 
 const userSchema = new mongoose.Schema({
     name: {
@@ -133,11 +133,11 @@ userSchema.pre('save', async function(next) {
     next()
 })
 
-userSchema.pre('deleteOne',async function (next) {
-    const user = this
-    await Task.deleteMany({ownerId : user._id})
-    next()
-}) 
+// userSchema.pre('deleteOne',async function (next) {
+//     const user = this
+//     await Task.deleteMany({ownerId : user._id})
+//     next()
+// }) 
 
 const User = mongoose.model('User', userSchema)
 
