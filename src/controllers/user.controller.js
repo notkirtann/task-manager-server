@@ -158,4 +158,8 @@ const deleteUser = async (req, res) => {
   }
 };
 
-export { createUser, getMyProfile, updateUser, deleteUser, loginUser, logoutUser, logoutAll, updateAddressField, updatePhoneNumberField, removeAddressField,};
+const userController ={
+  createUser, getMyProfile, updateUser, deleteUser, loginUser, logoutUser, logoutAll, updateAddressField, updatePhoneNumberField, removeAddressField
+}
+
+export default userController;
