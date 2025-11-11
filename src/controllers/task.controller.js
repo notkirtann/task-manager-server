@@ -16,15 +16,15 @@ const createTask = async (req, res) => {
 };
 
 const getAllTasks = async (req, res) => {
-  const match = ()=>{
-    if (req.query.completed ==='true') return true
-    else if(req.query.completed ==='false') return false
-    else return
+  const match = {}
+  
+  if(req.query.completed){
+    match.completed = req.query.completed ==='true'
   }
 
   try {
-    const tasks = await Task.find({ownerId: req.user._id,completed:match()});
-    res.send(tasks);
+      const tasks = await Task.populate({ownerId: req.user._id,match});
+      res.send(tasks);
   } catch (error) {
     res.status(500).send({ error: "Error fetching tasks" });
   }
