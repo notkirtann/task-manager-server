@@ -2,14 +2,24 @@ import express from 'express'
 import multer from 'multer'
 import userController from '../controllers/user.controller.js';
 import auth from '../middleware/auth.js';
+import { error } from 'console';
 
 const upload = multer({
     dest: 'avatars',
     limits :{
-        fileSize : 2000000
+        fileSize : 3500000
     },
     fileFilter(req,file,cb){
-        
+        // if (file.originalname.endsWith('.jpg') || file.originalname.endsWith('.jpeg') || file.originalname.endsWith('.png'))
+
+        if(file.originalname.match(/\.(jpg|jpeg|png)$/)){
+            return cb(undefined,true)
+        }else{
+            return cb(new Error('File must be in image format'))
+        }
+        //callback takes two function reject,resolve
+        //cb(new Error('File must be a jpg'))
+        //cb(undefined,true)
     }
 })
 
@@ -22,7 +32,9 @@ router.post("/logout",auth,userController.logoutUser)
 router.post("/logoutAll",auth,userController.logoutAll)
 
 //upload module
-router.post("/me/avatar",upload.single('avatar'),userController.uploadAvatar)
+router.post("/me/avatar",upload.single('avatar'),userController.uploadAvatar,(error,req,res,next){
+    res.status(400).send({'error' : error.message})
+})
 
 //GeT
 router.get("/me", auth, userController.getMyProfile);
