@@ -2,7 +2,6 @@ import express from 'express'
 import multer from 'multer'
 import userController from '../controllers/user.controller.js';
 import auth from '../middleware/auth.js';
-import { error } from 'console';
 
 const upload = multer({
     limits :{
