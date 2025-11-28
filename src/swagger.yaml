@@ -1,0 +1,795 @@
+openapi: 3.0.0
+info:
+  title: Task Manager API
+  version: 1.0.0
+  description: A comprehensive API for managing tasks and users with authentication
+  contact:
+    name: API Support
+    email: support@taskmanager.com
+
+servers:
+  - url: http://localhost:8000
+    description: Development server
+  - url: https://your-production-url.com
+    description: Production server
+
+tags:
+  - name: Users
+    description: User management and authentication
+  - name: Tasks
+    description: Task management operations
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Enter your JWT token
+
+  schemas:
+    User:
+      type: object
+      required:
+        - name
+        - email
+        - password
+      properties:
+        _id:
+          type: string
+          description: User ID
+          example: 507f1f77bcf86cd799439011
+        name:
+          type: string
+          description: User name
+          example: John Doe
+        email:
+          type: string
+          format: email
+          description: User email
+          example: john@example.com
+        password:
+          type: string
+          format: password
+          description: Strong password required
+          example: Strong@Pass123
+        age:
+          type: number
+          default: 0
+          example: 25
+        address:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+              city:
+                type: string
+                example: New York
+              state:
+                type: string
+                example: NY
+              pincode:
+                type: number
+                example: 10001
+        phoneNumber:
+          type: array
+          items:
+            type: object
+            properties:
+              _id:
+                type: string
+              mainNum:
+                type: string
+                example: "+1234567890"
+              altNum:
+                type: string
+                example: "+0987654321"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Task:
+      type: object
+      required:
+        - description
+      properties:
+        _id:
+          type: string
+          description: Task ID
+          example: 507f1f77bcf86cd799439011
+        description:
+          type: string
+          description: Task description
+          minLength: 1
+          example: Complete project documentation
+        completed:
+          type: boolean
+          default: false
+          description: Task completion status
+          example: false
+        ownerId:
+          type: string
+          description: User ID who owns this task
+          example: 507f1f77bcf86cd799439011
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Invalid credentials
+
+    SuccessMessage:
+      type: object
+      properties:
+        message:
+          type: string
+          example: Operation successful
+
+security:
+  - bearerAuth: []
+
+paths:
+  # ==================== USER ROUTES ====================
+  /users/signup:
+    post:
+      summary: Create a new user account
+      tags:
+        - Users
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+                - email
+                - password
+              properties:
+                name:
+                  type: string
+                  example: Cristiano Ronaldo
+                email:
+                  type: string
+                  format: email
+                  example: Ronaldo@goat.com
+                password:
+                  type: string
+                  format: password
+                  example: Strong@Pass123
+                age:
+                  type: number
+                  example: 25
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/login:
+    post:
+      summary: Login to user account
+      tags:
+        - Users
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: john@example.com
+                password:
+                  type: string
+                  format: password
+                  example: Strong@Pass123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        '400':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/logout:
+    post:
+      summary: Logout from current session
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Successfully Logout
+        '401':
+          description: Authentication required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+
+  /users/logoutAll:
+    post:
+      summary: Logout from all sessions
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successfully logged out from all sessions
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Successfully Logout from all session
+        '401':
+          description: Authentication required
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Unable to logout from All session
+
+  /users/me:
+    get:
+      summary: Get current user profile
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Authentication required
+
+    patch:
+      summary: Update user profile
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: John Updated
+                email:
+                  type: string
+                  format: email
+                  example: johnupdated@example.com
+                password:
+                  type: string
+                  format: password
+                  example: NewStrong@Pass123
+                age:
+                  type: number
+                  example: 26
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid updates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+
+    delete:
+      summary: Delete user account
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '401':
+          description: Authentication required
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /users/me/avatar:
+    post:
+      summary: Upload user avatar
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                avatar:
+                  type: string
+                  format: binary
+                  description: Image file (jpg, jpeg, or png) - max 3.5MB
+      responses:
+        '200':
+          description: Avatar uploaded successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: avatar added successfully
+        '400':
+          description: Invalid file format or size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+
+    get:
+      summary: Get user avatar
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Avatar image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '401':
+          description: Authentication required
+
+    delete:
+      summary: Delete user avatar
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Avatar deleted successfully
+          content:
+            application/json:
+              schema:
+                type: string
+                example: avatar deleted successfully
+        '401':
+          description: Authentication required
+
+  /users/{userId}/address/{addressId}:
+    patch:
+      summary: Update user address
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: User ID
+          example: 507f1f77bcf86cd799439011
+        - in: path
+          name: addressId
+          required: true
+          schema:
+            type: string
+          description: Address ID
+          example: 507f1f77bcf86cd799439012
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                city:
+                  type: string
+                  example: Los Angeles
+                state:
+                  type: string
+                  example: CA
+                pincode:
+                  type: number
+                  example: 90001
+      responses:
+        '200':
+          description: Address updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Address updated successfully
+                  updatedUser:
+                    $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input
+        '401':
+          description: Authentication required
+        '403':
+          description: Unauthorized
+        '404':
+          description: User or address not found
+
+  /users/{userId}/address/{addressId}/remove:
+    patch:
+      summary: Remove user address
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - in: path
+          name: addressId
+          required: true
+          schema:
+            type: string
+          description: Address ID
+      responses:
+        '200':
+          description: Address removed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Address removed successfully
+                  updatedUser:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Authentication required
+        '404':
+          description: User or address not found
+
+  /users/{userId}/phone/{phoneId}:
+    patch:
+      summary: Update user phone number
+      tags:
+        - Users
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: userId
+          required: true
+          schema:
+            type: string
+          description: User ID
+        - in: path
+          name: phoneId
+          required: true
+          schema:
+            type: string
+          description: Phone ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                mainNum:
+                  type: string
+                  example: "+1234567890"
+                altNum:
+                  type: string
+                  example: "+0987654321"
+      responses:
+        '200':
+          description: Phone number updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Phone number updated successfully
+                  updatedUser:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Authentication required
+
+  # ==================== TASK ROUTES ====================
+
+  /tasks:
+    post:
+      summary: Create a new task
+      tags:
+        - Tasks
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - description
+              properties:
+                description:
+                  type: string
+                  minLength: 1
+                  example: Complete project documentation
+                completed:
+                  type: boolean
+                  default: false
+                  example: false
+      responses:
+        '201':
+          description: Task created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+
+    get:
+      summary: Get all tasks for authenticated user
+      tags:
+        - Tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: query
+          name: completed
+          schema:
+            type: string
+            enum: [true, false]
+          description: Filter by completion status
+          example: false
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 5
+          description: Number of tasks to return
+          example: 10
+        - in: query
+          name: skip
+          schema:
+            type: integer
+            default: 0
+          description: Number of tasks to skip (for pagination)
+          example: 0
+        - in: query
+          name: sortBy
+          schema:
+            type: string
+          description: 'Sort by field (format: field:asc or field:desc)'
+          example: createdAt:desc
+      responses:
+        '200':
+          description: List of tasks retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Task'
+        '401':
+          description: Authentication required
+        '500':
+          description: Error fetching tasks
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /tasks/{id}:
+    get:
+      summary: Get a specific task by ID
+      tags:
+        - Tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Task ID
+          example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Task retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          description: Authentication required
+        '404':
+          description: Task not found
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                type: string
+                example: Unable to fetch due to server error
+
+    patch:
+      summary: Update a task
+      tags:
+        - Tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Task ID
+          example: 507f1f77bcf86cd799439011
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                description:
+                  type: string
+                  example: Updated task description
+                completed:
+                  type: boolean
+                  example: true
+      responses:
+        '200':
+          description: Task updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '400':
+          description: Invalid updates
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Authentication required
+        '404':
+          description: Task not found
+
+    delete:
+      summary: Delete a task
+      tags:
+        - Tasks
+      security:
+        - bearerAuth: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+          description: Task ID
+          example: 507f1f77bcf86cd799439011
+      responses:
+        '200':
+          description: Task deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Task'
+        '401':
+          description: Authentication required
+        '404':
+          description: Task not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
