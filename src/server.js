@@ -2,11 +2,11 @@ import dotenv from 'dotenv'
 dotenv.config()
 console.log("<-------------------------------------------------->Loaded MONGODB_URL:", process.env.MONGODB_URL);
 import express from "express";
-import "./config/mongoose.js";
+import "./db/mongoose.js";
 import userRoutes from "./routes/user.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 //swagger
-import { swaggerUi, swaggerDocument } from './config/swagger.js';
+import { swaggerUi, swaggerDocument } from './db/swagger.js';
 
 const app = express();
 const PORT = process.env.PORT;
